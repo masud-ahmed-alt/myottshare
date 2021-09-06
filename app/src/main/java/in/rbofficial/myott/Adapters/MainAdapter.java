@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 import in.rbofficial.myott.Models.MainModel;
-import in.rbofficial.myott.NetflixActivity;
+import in.rbofficial.myott.SlotManagerActivity;
 import in.rbofficial.myott.R;
 
 public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MViewHolder> {
@@ -58,11 +58,16 @@ public class MainAdapter extends RecyclerView.Adapter<MainAdapter.MViewHolder> {
             logo = itemView.findViewById(R.id.brandLogo);
             brand = itemView.findViewById(R.id.brandName);
             price = itemView.findViewById(R.id.priceDesc);
+            itemView.setOnClickListener(this::onClick);
         }
 
         @Override
         public void onClick(View v) {
-            Intent intent = new Intent(context,NetflixActivity.class);
+            MainModel model = list.get(getAdapterPosition());
+            Intent intent = new Intent(context, SlotManagerActivity.class);
+            intent.putExtra("name",model.getBrandName());
+            intent.putExtra("subName",model.getBrandName() + "( "+model.getPriceDesc()+ "/Screen )");
+            intent.putExtra("amount",Integer.parseInt(model.getPriceDesc()));
             context.startActivity(intent);
         }
     }

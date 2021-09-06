@@ -1,7 +1,6 @@
 package in.rbofficial.myott.ui.home;
 
 import android.annotation.SuppressLint;
-import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,8 +15,6 @@ import java.util.List;
 
 import in.rbofficial.myott.Adapters.MainAdapter;
 import in.rbofficial.myott.Models.MainModel;
-import in.rbofficial.myott.NetflixActivity;
-import in.rbofficial.myott.PrimeVideoActivity;
 import in.rbofficial.myott.R;
 import in.rbofficial.myott.databinding.FragmentHomeBinding;
 
@@ -39,7 +36,7 @@ public class HomeFragment extends Fragment {
 
         list.add(new MainModel(
                 R.drawable.prime_vdo,
-                "Amazon Prime Video",
+                "Prime Video",
                 "100"
         ));
         list.add(new MainModel(
