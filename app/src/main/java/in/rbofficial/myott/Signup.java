@@ -1,29 +1,21 @@
 package in.rbofficial.myott;
 
-import androidx.annotation.NonNull;
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.Task;
+import androidx.appcompat.app.AppCompatActivity;
+
 import com.google.android.material.snackbar.Snackbar;
-import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
-
-import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
 import java.util.Map;
 
-import in.rbofficial.myott.databinding.ActivityLoginBinding;
 import in.rbofficial.myott.databinding.ActivitySignupBinding;
 
 public class Signup extends AppCompatActivity {
@@ -33,18 +25,24 @@ public class Signup extends AppCompatActivity {
     private FirebaseAuth auth;
     private FirebaseUser user;
     private FirebaseFirestore db;
+    ProgressDialog pd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         binding = ActivitySignupBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        pd = new ProgressDialog(this);
+        pd.setMessage("Loading! Please Wait");
+
         auth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
         binding.navSignIn.setOnClickListener(vsup->{
             startActivity(new Intent(getApplicationContext(),Login.class));
             finish();
         });
+
         binding.btnSignUp.setOnClickListener(v->{
             name = binding.fullName.getText().toString();
             email = binding.email.getText().toString();
@@ -89,7 +87,10 @@ public class Signup extends AppCompatActivity {
 
             auth.createUserWithEmailAndPassword(email,password)
                     .addOnCompleteListener(task -> {
+
                         if(task.isSuccessful()){
+                            pd.show();
+                            pd.setCancelable(false);
                             user = auth.getCurrentUser();
                             Map<String,Object> data = new HashMap<>();
                             data.put("name",name);
@@ -98,12 +99,14 @@ public class Signup extends AppCompatActivity {
                             db.collection("users").add(data)
                                     .addOnCompleteListener(task1 -> {
                                         if(task1.isSuccessful()){
+                                            pd.dismiss();
                                             Toast.makeText(getApplicationContext(),
                                                     "Success", Toast.LENGTH_SHORT).show();
                                             startActivity(new Intent(getApplicationContext(),MainActivity.class));
                                             finish();
                                         }
                                     }).addOnFailureListener(e -> {
+                                        pd.dismiss();
                                 Toast.makeText(getApplicationContext(), "Error "+e.getMessage(), Toast.LENGTH_SHORT).show();
                                     });
 

@@ -3,6 +3,7 @@ package in.rbofficial.myott;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -30,6 +31,8 @@ public class Login extends AppCompatActivity {
 
     private FirebaseAuth auth;
     private FirebaseUser user;
+
+    ProgressDialog pd;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -73,17 +76,22 @@ public class Login extends AppCompatActivity {
                 return;
             }
 
-
+            pd.show();
+            pd.setCancelable(false);
             auth.signInWithEmailAndPassword(email,password)
                     .addOnCompleteListener(task -> {
                         if(task.isSuccessful()){
+
+                            pd.dismiss();
                             Toast.makeText(getApplicationContext(), "Welcome Back !", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(getApplicationContext(),MainActivity.class));
                             finish();
                         }else {
+                            pd.dismiss();
                             Toast.makeText(getApplicationContext(), "Error In Login", Toast.LENGTH_SHORT).show();
                         }
-                    }).addOnFailureListener(e -> Toast.makeText(getApplicationContext(), "User No Found!", Toast.LENGTH_SHORT).show());
+                    }).addOnFailureListener(e ->
+                    Toast.makeText(getApplicationContext(), "User No Found!", Toast.LENGTH_SHORT).show());
 
         });
 
@@ -94,6 +102,8 @@ public class Login extends AppCompatActivity {
     private void initialize() {
         auth = FirebaseAuth.getInstance();
         user = auth.getCurrentUser();
+        pd = new ProgressDialog(this);
+        pd.setMessage("Checking credentials! Please Wait");
 
     }
 }

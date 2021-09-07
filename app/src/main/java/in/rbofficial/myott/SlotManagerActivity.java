@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.Map;
 
 import in.rbofficial.myott.databinding.ActivityNetflixBinding;
+import in.rbofficial.myott.ui.mysubscription.MySubsFragment;
 
 import static in.rbofficial.myott.Constant.Constant.CURRENCY;
 
@@ -137,8 +138,12 @@ public class SlotManagerActivity extends AppCompatActivity implements PaymentRes
         Log.d("abc","fhg  s : "+s);
         Toast.makeText(this, "Payment Success", Toast.LENGTH_SHORT).show();
 
-
-
+        try {
+            startActivity(new Intent(getApplicationContext(), MySubsFragment.class));
+            finish();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
     }
@@ -146,5 +151,11 @@ public class SlotManagerActivity extends AppCompatActivity implements PaymentRes
     @Override
     public void onPaymentError(int i, String s) {
         Toast.makeText(this, "Payment Failed", Toast.LENGTH_SHORT).show();
+        try {
+            startActivity(new Intent(getApplicationContext(), MySubsFragment.class));
+            finish();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
