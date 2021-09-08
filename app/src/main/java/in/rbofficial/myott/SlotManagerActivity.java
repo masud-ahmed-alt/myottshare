@@ -1,15 +1,21 @@
 package in.rbofficial.myott;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
@@ -20,9 +26,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 
 import in.rbofficial.myott.databinding.ActivityNetflixBinding;
 import in.rbofficial.myott.ui.mysubscription.MySubsFragment;
@@ -37,6 +45,7 @@ public class SlotManagerActivity extends AppCompatActivity implements PaymentRes
     private FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
     private FirebaseFirestore db;
     private int usersSize = 0;
+    private FirebaseFirestore current_ref;
 
 
     @Override
@@ -50,11 +59,14 @@ public class SlotManagerActivity extends AppCompatActivity implements PaymentRes
         binding.btnBuy.setOnClickListener(v->{
             if (binding.checkbox.isChecked()){
                 Toast.makeText(this, "Complete Payment", Toast.LENGTH_SHORT).show();
-                if(isSlothAvailable()){
-                    pay();
-                }else {
-                    createAndPay();
-                }
+//                if(isSlothAvailable()){
+//                    Toast.makeText(getApplicationContext(), "Direct Pay", Toast.LENGTH_SHORT).show();
+//                    pay();
+//                }else {
+//                    Toast.makeText(getApplicationContext(), "Create Slot", Toast.LENGTH_SHORT).show();
+//                    createAndPay();
+//                }
+                isSlothAvailable();
             }
             else {
                 binding.checkbox.setError("Please accept terms and conditions");
@@ -64,37 +76,34 @@ public class SlotManagerActivity extends AppCompatActivity implements PaymentRes
 
     private void createAndPay() {
         HashMap<String, Object> slot = new HashMap<>();
-        String[] users = new String[]{};
+        List<String> users = new ArrayList<>();
         slot.put("platform",name);
         slot.put("price",name);
         slot.put("users",users);
-        db.collection("slots").add(users)
+        db.collection("slots").add(slot)
                 .addOnCompleteListener(task -> {
                     if(task.isSuccessful()){
                         Toast.makeText(getApplicationContext(), "Slot Refreshed", Toast.LENGTH_SHORT).show();
+                        pay();
+                        current_ref = task.getResult().getFirestore();
                     }
 
                 }).addOnFailureListener(e -> {
             Toast.makeText(getApplicationContext(), e.getMessage(), Toast.LENGTH_SHORT).show();
         });
-        pay();
+
     }
 
 
-    private boolean isSlothAvailable() {
+    private void isSlothAvailable() {
         db.collection("slots").get()
                 .addOnCompleteListener(task -> {
                     QuerySnapshot snapshots = task.getResult();
                     for (QueryDocumentSnapshot documentSnapshot : snapshots){
-                        Log.d("TAG", "isSlothAvailable: "+documentSnapshot.get("users"));
-                        List<String> list = (List<String>) documentSnapshot.get("users");
-                        if(list.size()>4){
-                            usersSize=list.size();
-                            return;
-                        }
+
                     }
                 });
-        return usersSize < 4;
+        Toast.makeText(getApplicationContext(), "TOATL : "+String.valueOf(usersSize) , Toast.LENGTH_SHORT).show();
     }
 
     private void getIntentData(){
@@ -137,6 +146,7 @@ public class SlotManagerActivity extends AppCompatActivity implements PaymentRes
     public void onPaymentSuccess(String s) {
         Log.d("abc","fhg  s : "+s);
         Toast.makeText(this, "Payment Success", Toast.LENGTH_SHORT).show();
+        updateDatabase(s);
 
         try {
             startActivity(new Intent(getApplicationContext(), MySubsFragment.class));
@@ -146,6 +156,21 @@ public class SlotManagerActivity extends AppCompatActivity implements PaymentRes
         }
 
 
+    }
+
+    private void updateDatabase(String s) {
+        db.collection("slots").get().addOnCompleteListener(task -> {
+            QuerySnapshot snapshots = task.getResult();
+            for (QueryDocumentSnapshot ss : snapshots){
+                List<String> users = (List<String>) ss.get("users");
+                if(users.size()<4){
+                    List<DocumentSnapshot> doc = task.getResult().getDocuments();
+                    Log.d(TAG, "updateDatabase: "+doc);
+                }
+            }
+        }).addOnFailureListener(e -> {
+
+        });
     }
 
     @Override
